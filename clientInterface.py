@@ -29,10 +29,12 @@ def login():
     if  totp != None:
         LOGGER.debug(f'Codigo totp para o usuario {username}: {totp.now()}')
         totp_code = input("\nVerificação de identidade. Informe o código TOTP: ")
+        #alterar validação do codigo TOTP para o server
         if totp.verify(totp_code):
             global logged_user
             logged_user = user
             LOGGER.debug(f'Usuario logado: {logged_user.get_username()}')
+            #Após login, derivar chave simetrica da sessão
         return user_menu()
     return
         
