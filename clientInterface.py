@@ -1,6 +1,7 @@
 from commons.utils.loggerUtils import LoggerUtils
 from commons.utils.encryptUtils import EncryptUtils
 from commons.domain.user import User
+from commons.domain.message import Message
 from server.serverInterface import ServerInterface
 from datetime import datetime
 import sys
@@ -41,11 +42,11 @@ def login():
             global simetric_key
             simetric_key = encrypt_utils.get_scrypt_encrypt( str(totp_code), user_salt)
             LOGGER.debug(f'Chave simetrica gerada para secao de {username}: {simetric_key}')
-            return user_menu(simetric_key)
+            return user_menu()
         
     return
         
-def user_menu(self):
+def user_menu():
     print("Menu de usuario")
     value = 0
     while value > -1 :
@@ -56,8 +57,18 @@ def user_menu(self):
             global simetric_key
             message = input("Digite sua mensagem")
             message = encrypt_utils.encrypt_message(message, simetric_key)
+            print("Enviando mensagem ao servidor")
             LOGGER.debug(f'mensagem encriptada {message}')
+            server_response = server_interface.receive_message(Message(logged_user.get_username(), "USER", message))
+            process_server_response(server_response)            
     pass
+
+def process_server_response(message: Message):
+    global simetric_key
+    LOGGER.debug(f'Recebida mensagem criptografada: {message.get_content()}')
+    decripted_message = encrypt_utils.decrypt_message(message.get_content(), simetric_key)
+    LOGGER.debug(f'Mensagem decriptada: {decripted_message}')
+
 
 def create_user():
     username = input("Informe o novo nome de usuário: ")

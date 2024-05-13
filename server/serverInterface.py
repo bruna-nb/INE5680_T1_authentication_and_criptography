@@ -67,11 +67,19 @@ class ServerInterface:
     def receive_message(self, message: Message):
         self.LOGGER.debug(f'Recebida mensagem criptografada: {message.get_content()}')
         totp_code = str(self.section_repository.get_totp_code_by_username_and_status(message.get_username(), "ACTIVE"))
-        salt = self.user_repository.get_salt_by_username(message.get_username())
+        salt = self.get_salt_by_username(message.get_username())
         key = self.get_section_key(totp_code, salt)
 
         decripted_message = self.encrypt_utils.decrypt_message(message.get_content(), key)
         self.LOGGER.debug(f'Mensagem decriptada: {decripted_message}')
+
+        return self.send_user_message(message.get_username(), key)
+
+    def send_user_message(self, username, key):
+        mensagem = input("Digite uma mensagem para enviar ao usuário: ")
+        content = self.encrypt_utils.encrypt_message(mensagem, key)
+        print("Enviando mensagem ao usuário")
+        return Message(username, "SERVER",content)
 
     def get_section_key(self, code, salt):
         return self.encrypt_utils.get_scrypt_encrypt(code, salt)

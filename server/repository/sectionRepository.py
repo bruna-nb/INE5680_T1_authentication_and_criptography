@@ -19,7 +19,7 @@ class SectionRepository:
         
     def get_totp_code_by_username_and_status(self, username:str, status:str) -> int:
         self.c.execute("SELECT totp_code FROM section WHERE username=? AND status=?",(username,status,))
-        return int(self.c.fetchone())
+        return int(self.c.fetchone()[0])
     
     def save_section(self, username:str, totp_code:int, status:str):
         self.c.execute("INSERT INTO section (username, totp_code, status) VALUES (?, ?, ?)",(username, totp_code, status))
