@@ -4,6 +4,7 @@ from commons.utils.loggerUtils import LoggerUtils
 from commons.domain.user import User
 from commons.utils.encryptUtils import EncryptUtils
 from commons.utils.authenticationUtils import AuthenticationUtils
+from commons.domain.message import Message
 from datetime import datetime
 from pyotp import TOTP
 
@@ -62,6 +63,19 @@ class ServerInterface:
 
     def create_section(self, totp_code:int, username:str, status:str):
         self.section_repository.save_section(username, totp_code, status)
+
+    def receive_message(self, message: Message):
+        self.LOGGER.debug(f'Recebida mensagem criptografada: {message.get_content()}')
+        totp_code = str(self.section_repository.get_totp_code_by_username_and_status(message.get_username(), "ACTIVE"))
+        salt = self.user_repository.get_salt_by_username(message.get_username())
+        key = self.get_section_key(totp_code, salt)
+
+        decripted_message = self.encrypt_utils.decrypt_message(message.get_content(), key)
+        self.LOGGER.debug(f'Mensagem decriptada: {decripted_message}')
+
+    def get_section_key(self, code, salt):
+        return self.encrypt_utils.get_scrypt_encrypt(code, salt)
+
 
     
 

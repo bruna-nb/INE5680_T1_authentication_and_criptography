@@ -14,7 +14,7 @@ class EncryptUtils:
     
     def get_scrypt_encrypt(self, password, salt):
         return scrypt(password, salt, 32, N=2**14, r=8, p=1)
-'''  
+  
     def encrypt_message(self, message, key):
         # Padding da mensagem para ser um múltiplo de 16 bytes (tamanho do bloco AES)
         if len(message) % 16 != 0:
@@ -31,4 +31,3 @@ class EncryptUtils:
         cipher = AES.new(key, AES.MODE_CBC, iv)
         plaintext = cipher.decrypt(ciphertext).rstrip(b' ')
         return plaintext.decode('utf-8')
-''' 
