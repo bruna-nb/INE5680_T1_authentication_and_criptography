@@ -1,5 +1,3 @@
-from commons.utils.loggerUtils import LoggerUtils
-
 class User:
 
     def __init__(self, username, password):

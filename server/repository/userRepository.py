@@ -1,5 +1,4 @@
 from commons.utils.loggerUtils import LoggerUtils
-from commons.domain.user import User
 import sqlite3
 
 class UserRepository:

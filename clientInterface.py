@@ -9,6 +9,7 @@ LOGGER = LoggerUtils.get_logger("CLIENT_INTERFACE")
 encrypt_utils = EncryptUtils()
 server_interface = ServerInterface()
 logged_user:User = None
+simetric_key = None
 
 def login():
     username = input("Informe o nome de usuário: ")
@@ -28,18 +29,34 @@ def login():
     totp = server_interface.login(user, datetime.now())
     if  totp != None:
         LOGGER.debug(f'Codigo totp para o usuario {username}: {totp.now()}')
-        totp_code = input("\nVerificação de identidade. Informe o código TOTP: ")
+        totp_code = int(input("\nVerificação de identidade. Informe o código TOTP: "))
         #alterar validação do codigo TOTP para o server
-        if totp.verify(totp_code):
+        if server_interface.validate_2fa(totp, totp_code, username):
+            print("verificado")
             global logged_user
             logged_user = user
             LOGGER.debug(f'Usuario logado: {logged_user.get_username()}')
             #Após login, derivar chave simetrica da sessão
-        return user_menu()
+            user_salt = server_interface.get_salt_by_username(username)
+            global simetric_key
+            simetric_key = encrypt_utils.get_scrypt_encrypt( str(totp_code), user_salt)
+            LOGGER.debug(f'Chave simetrica gerada para secao de {username}: {simetric_key}')
+            return user_menu(simetric_key)
+        
     return
         
-def user_menu():
+def user_menu(self):
     print("Menu de usuario")
+    value = 0
+    while value > -1 :
+        value = int(input("Selecione uma opção: \n" + 
+                       "0: Enviar mensagem \n" + 
+                       "-1: Sair \n"))
+        if value == 0:
+            global simetric_key
+            message = input("Digite sua mensagem")
+            message = encrypt_utils.encrypt_message(message, simetric_key)
+            LOGGER.debug(f'mensagem encriptada {message}')
     pass
 
 def create_user():
